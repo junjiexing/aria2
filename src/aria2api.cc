@@ -300,6 +300,29 @@ std::vector<ServerData> getServers(Session* session, A2Gid gid)
   return result;
 }
 
+BitTorrentStatus getBitTorrentStatus(Session* session, A2Gid gid)
+{
+  BitTorrentStatus result{};
+#ifdef ENABLE_BITTORRENT
+  auto& engine = session->context->reqinfo->getDownloadEngine();
+  const auto group = engine->getRequestGroupMan()->findGroup(gid);
+  if (!group) {
+    return result;
+  }
+
+  result.seeder = group->isSeeder();
+  const auto btObject = engine->getBtRegistry()->get(gid);
+  if (btObject && btObject->peerStorage) {
+    const auto& peers = btObject->peerStorage->getUsedPeers();
+    result.numSeeders = countSeeder(peers.begin(), peers.end());
+  }
+#else  // !ENABLE_BITTORRENT
+  (void)session;
+  (void)gid;
+#endif // !ENABLE_BITTORRENT
+  return result;
+}
+
 namespace {
 template <typename InputIterator, typename Pred>
 void apiGatherOption(InputIterator first, InputIterator last, Pred pred,

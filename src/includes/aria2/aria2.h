@@ -144,6 +144,14 @@ struct ServerData {
 };
 
 /**
+ * Describes the local seeding state and connected seed count.
+ */
+struct BitTorrentStatus {
+  bool seeder;
+  size_t numSeeders;
+};
+
+/**
  * Returns all option definitions compiled into this libaria2 build.
  */
 std::vector<OptionData> getOptionMetadata();
@@ -164,6 +172,12 @@ std::vector<PeerData> getPeers(Session* session, A2Gid gid);
  * downloads this returns an empty vector.
  */
 std::vector<ServerData> getServers(Session* session, A2Gid gid);
+
+/**
+ * Returns BitTorrent seeding state for |gid|. Non-BitTorrent and stopped
+ * downloads return zero-initialized values.
+ */
+BitTorrentStatus getBitTorrentStatus(Session* session, A2Gid gid);
 
 /**
  * @enum

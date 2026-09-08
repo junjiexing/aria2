@@ -70,6 +70,9 @@ void Aria2ApiTest::testCapabilityMetadata()
 
   CPPUNIT_ASSERT(getPeers(session_, 0).empty());
   CPPUNIT_ASSERT(getServers(session_, 0).empty());
+  const auto bittorrent = getBitTorrentStatus(session_, 0);
+  CPPUNIT_ASSERT(!bittorrent.seeder);
+  CPPUNIT_ASSERT_EQUAL((size_t)0, bittorrent.numSeeders);
 }
 
 void Aria2ApiTest::testAddUri()
