@@ -38,5 +38,5 @@ Description: High speed download utility library
 URL: https://aria2.github.io/
 Version: @VERSION@
 Libs: -L${libdir} -laria2
-# TODO Add Requires.private: here
+Libs.private: @APPLETLS_LDFLAGS@ @EXTRALIBS@ @ZLIB_LIBS@ @LIBUV_LIBS@ @LIBXML2_LIBS@ @EXPAT_LIBS@ @SQLITE3_LIBS@ @WINTLS_LIBS@ @LIBGNUTLS_LIBS@ @OPENSSL_LIBS@ @LIBNETTLE_LIBS@ @LIBGMP_LIBS@ @LIBGCRYPT_LIBS@ @LIBSSH2_LIBS@ @LIBCARES_LIBS@ @TCMALLOC_LIBS@ @JEMALLOC_LIBS@ @LTLIBINTL@
 Cflags: -I${includedir}

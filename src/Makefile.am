@@ -1,5 +1,7 @@
 SUBDIRS = includes
+if ENABLE_ARIA2C
 bin_PROGRAMS = aria2c
+endif
 aria2c_SOURCES = main.cc
 SRCS =  \
 	a2algo.h\
@@ -752,4 +754,3 @@ endif # !ENABLE_LIBARIA2
 AM_CFLAGS = @EXTRACFLAGS@
 
 AM_CXXFLAGS = @WARNCXXFLAGS@ @CXX1XCXXFLAGS@ @EXTRACXXFLAGS@
-

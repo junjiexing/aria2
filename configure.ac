@@ -73,6 +73,7 @@ ARIA2_ARG_DISABLE([bittorrent])
 ARIA2_ARG_DISABLE([metalink])
 ARIA2_ARG_DISABLE([websocket])
 ARIA2_ARG_DISABLE([epoll])
+ARIA2_ARG_DISABLE([aria2c])
 ARIA2_ARG_ENABLE([libaria2])
 ARIA2_ARG_ENABLE([werror])
 
@@ -1006,6 +1007,7 @@ fi
 AM_CONDITIONAL([ENABLE_WEBSOCKET], [test "x$enable_websocket" = "xyes"])
 
 AM_CONDITIONAL([ENABLE_LIBARIA2], [test "x$enable_libaria2" = "xyes"])
+AM_CONDITIONAL([ENABLE_ARIA2C], [test "x$enable_aria2c" = "xyes"])
 
 AC_SUBST([bashcompletiondir])
 
@@ -1113,6 +1115,7 @@ Metalink:       $enable_metalink
 XML-RPC:        $enable_xml_rpc
 Message Digest: $use_md
 WebSocket:      $enable_websocket (CFLAGS='$WSLAY_CFLAGS' LIBS='$WSLAY_LIBS')
+aria2c:         $enable_aria2c
 Libaria2:       $enable_libaria2 (shared=${enable_shared} static=${enable_static})
 bash_completion dir: $bashcompletiondir
 Static build:   $ARIA2_STATIC

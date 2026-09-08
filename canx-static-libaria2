@@ -1,0 +1,41 @@
+#!/bin/sh
+set -eu
+
+SOURCE_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+: "${CANX_INSTALL_PREFIX:?set CANX_INSTALL_PREFIX to an absolute installation prefix}"
+CANX_BUILD_DIR=${CANX_BUILD_DIR:-"$SOURCE_DIR/build-canx-static"}
+
+case "$CANX_INSTALL_PREFIX" in
+  /*) ;;
+  *)
+    echo "CANX_INSTALL_PREFIX must be absolute" >&2
+    exit 2
+    ;;
+esac
+
+if test ! -x "$SOURCE_DIR/configure"; then
+  (cd "$SOURCE_DIR" && autoreconf -fi)
+fi
+
+mkdir -p "$CANX_BUILD_DIR" "$CANX_INSTALL_PREFIX"
+cd "$CANX_BUILD_DIR"
+
+ARIA2_STATIC=yes "$SOURCE_DIR/configure" \
+  --prefix="$CANX_INSTALL_PREFIX" \
+  --enable-libaria2 \
+  --disable-aria2c \
+  --enable-static \
+  --disable-shared \
+  --disable-dependency-tracking \
+  "$@"
+
+make -j"${CANX_BUILD_JOBS:-4}"
+make install
+
+test -f "$CANX_INSTALL_PREFIX/lib/libaria2.a"
+if find "$CANX_INSTALL_PREFIX/lib" -maxdepth 1 -name 'libaria2.so*' -print -quit | grep -q .; then
+  echo "shared libaria2 unexpectedly produced" >&2
+  exit 1
+fi
+
+echo "CANX_STATIC_LIBARIA2_OK archive=$CANX_INSTALL_PREFIX/lib/libaria2.a"
