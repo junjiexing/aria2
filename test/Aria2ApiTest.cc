@@ -28,6 +28,7 @@ class Aria2ApiTest : public CppUnit::TestFixture {
   CPPUNIT_TEST(testChangeGlobalOption);
   CPPUNIT_TEST(testDownloadResultDH);
   CPPUNIT_TEST(testCapabilityMetadata);
+  CPPUNIT_TEST(testRemoveDownloadResult);
   CPPUNIT_TEST_SUITE_END();
 
   Session* session_;
@@ -51,6 +52,7 @@ public:
   void testChangeGlobalOption();
   void testDownloadResultDH();
   void testCapabilityMetadata();
+  void testRemoveDownloadResult();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(Aria2ApiTest);
@@ -73,6 +75,11 @@ void Aria2ApiTest::testCapabilityMetadata()
   const auto bittorrent = getBitTorrentStatus(session_, 0);
   CPPUNIT_ASSERT(!bittorrent.seeder);
   CPPUNIT_ASSERT_EQUAL((size_t)0, bittorrent.numSeeders);
+}
+
+void Aria2ApiTest::testRemoveDownloadResult()
+{
+  CPPUNIT_ASSERT_EQUAL(-1, removeDownloadResult(session_, 0));
 }
 
 void Aria2ApiTest::testAddUri()

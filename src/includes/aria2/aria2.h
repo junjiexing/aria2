@@ -449,6 +449,13 @@ std::vector<A2Gid> getActiveDownload(Session* session);
 int removeDownload(Session* session, A2Gid gid, bool force = false);
 
 /**
+ * Removes the stopped download result denoted by |gid|. This must only be
+ * called after the download has reached a stopped state. It returns 0 if the
+ * result was removed, or a negative error code if no such result exists.
+ */
+int removeDownloadResult(Session* session, A2Gid gid);
+
+/**
  * @function
  *
  * Pauses the download denoted by the |gid|. The status of paused

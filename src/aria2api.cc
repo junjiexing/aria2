@@ -163,6 +163,12 @@ int run(Session* session, RUN_MODE mode)
   return e->run(mode == RUN_ONCE);
 }
 
+int removeDownloadResult(Session* session, A2Gid gid)
+{
+  auto& engine = session->context->reqinfo->getDownloadEngine();
+  return engine->getRequestGroupMan()->removeDownloadResult(gid) ? 0 : -1;
+}
+
 int shutdown(Session* session, bool force)
 {
   auto& e = session->context->reqinfo->getDownloadEngine();
