@@ -53,7 +53,10 @@
 #include "PieceStorage.h"
 #include "DownloadContext.h"
 #include "FileEntry.h"
+#include "FeatureConfig.h"
 #include "BitfieldMan.h"
+#include "Request.h"
+#include "PeerStat.h"
 #include "DownloadContext.h"
 #include "RpcMethodImpl.h"
 #include "console.h"
@@ -64,6 +67,9 @@
 #include "ApiCallbackDownloadEventListener.h"
 #ifdef ENABLE_BITTORRENT
 #  include "bittorrent_helper.h"
+#  include "BtRegistry.h"
+#  include "PeerStorage.h"
+#  include "Peer.h"
 #endif // ENABLE_BITTORRENT
 
 namespace aria2 {
@@ -186,6 +192,113 @@ A2Gid hexToGid(const std::string& hex)
 }
 
 bool isNull(A2Gid gid) { return gid == 0; }
+
+std::vector<OptionData> getOptionMetadata()
+{
+  const auto& parser = OptionParser::getInstance();
+  std::vector<OptionData> result;
+  result.reserve(option::countOption());
+  for (size_t i = 1, length = option::countOption(); i < length; ++i) {
+    const auto pref = option::i2p(i);
+    const auto handler = parser->find(pref);
+    if (!handler) {
+      continue;
+    }
+
+    OptionData optionData;
+    optionData.name = pref->k;
+    optionData.description = handler->getDescription();
+    optionData.defaultValue = handler->getDefaultValue();
+    optionData.possibleValues = handler->createPossibleValuesString();
+    optionData.shortName = handler->getShortName();
+    optionData.argumentType = static_cast<int>(handler->getArgType());
+    optionData.hidden = handler->isHidden();
+    optionData.initialOption = handler->getInitialOption();
+    optionData.changeOption = handler->getChangeOption();
+    optionData.changeOptionForReserved = handler->getChangeOptionForReserved();
+    optionData.changeGlobalOption = handler->getChangeGlobalOption();
+    optionData.cumulative = handler->getCumulative();
+    result.push_back(std::move(optionData));
+  }
+  return result;
+}
+
+std::vector<std::string> getSupportedFeatures()
+{
+  std::vector<std::string> result;
+  for (int feature = 0; feature < MAX_FEATURE; ++feature) {
+    const auto name = strSupportedFeature(feature);
+    if (name) {
+      result.emplace_back(name);
+    }
+  }
+  return result;
+}
+
+std::vector<PeerData> getPeers(Session* session, A2Gid gid)
+{
+  std::vector<PeerData> result;
+#ifdef ENABLE_BITTORRENT
+  auto& engine = session->context->reqinfo->getDownloadEngine();
+  const auto btObject = engine->getBtRegistry()->get(gid);
+  if (!btObject || !btObject->peerStorage) {
+    return result;
+  }
+
+  for (const auto& peer : btObject->peerStorage->getUsedPeers()) {
+    if (!peer->isActive()) {
+      continue;
+    }
+    PeerData data;
+    data.peerId.assign(reinterpret_cast<const char*>(peer->getPeerId()),
+                       PEER_ID_LENGTH);
+    data.ip = peer->getIPAddress();
+    data.port = peer->isIncomingPeer() ? 0 : peer->getPort();
+    if (peer->getBitfieldLength() > 0) {
+      data.bitfield.assign(reinterpret_cast<const char*>(peer->getBitfield()),
+                           peer->getBitfieldLength());
+    }
+    data.downloadSpeed = peer->calculateDownloadSpeed();
+    data.uploadSpeed = peer->calculateUploadSpeed();
+    data.amChoking = peer->amChoking();
+    data.peerChoking = peer->peerChoking();
+    data.seeder = peer->isSeeder();
+    result.push_back(std::move(data));
+  }
+#else  // !ENABLE_BITTORRENT
+  (void)session;
+  (void)gid;
+#endif // !ENABLE_BITTORRENT
+  return result;
+}
+
+std::vector<ServerData> getServers(Session* session, A2Gid gid)
+{
+  std::vector<ServerData> result;
+  auto& engine = session->context->reqinfo->getDownloadEngine();
+  const auto group = engine->getRequestGroupMan()->findGroup(gid);
+  if (!group || group->getState() != RequestGroup::STATE_ACTIVE) {
+    return result;
+  }
+
+  int fileIndex = 1;
+  for (const auto& file : group->getDownloadContext()->getFileEntries()) {
+    for (const auto& request : file->getInFlightRequests()) {
+      const auto peerStat = request->getPeerStat();
+      if (!peerStat) {
+        continue;
+      }
+      ServerData data;
+      data.fileIndex = fileIndex;
+      data.uri = request->getUri();
+      data.currentUri = request->getCurrentUri();
+      data.downloadSpeed = peerStat->calculateDownloadSpeed();
+      result.push_back(std::move(data));
+    }
+    ++fileIndex;
+  }
+  return result;
+}
 
 namespace {
 template <typename InputIterator, typename Pred>

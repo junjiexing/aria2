@@ -98,6 +98,74 @@ typedef uint64_t A2Gid;
 typedef std::vector<std::pair<std::string, std::string>> KeyVals;
 
 /**
+ * Describes one option compiled into this libaria2 build. This allows API
+ * consumers to build complete option editors without duplicating aria2's
+ * option table.
+ */
+struct OptionData {
+  std::string name;
+  std::string description;
+  std::string defaultValue;
+  std::string possibleValues;
+  char shortName;
+  int argumentType;
+  bool hidden;
+  bool initialOption;
+  bool changeOption;
+  bool changeOptionForReserved;
+  bool changeGlobalOption;
+  bool cumulative;
+};
+
+/**
+ * Describes an active BitTorrent peer. peerId and bitfield contain binary
+ * bytes and may include NUL characters.
+ */
+struct PeerData {
+  std::string peerId;
+  std::string ip;
+  uint16_t port;
+  std::string bitfield;
+  int downloadSpeed;
+  int uploadSpeed;
+  bool amChoking;
+  bool peerChoking;
+  bool seeder;
+};
+
+/**
+ * Describes an active HTTP/FTP server connection for a file.
+ */
+struct ServerData {
+  int fileIndex;
+  std::string uri;
+  std::string currentUri;
+  int downloadSpeed;
+};
+
+/**
+ * Returns all option definitions compiled into this libaria2 build.
+ */
+std::vector<OptionData> getOptionMetadata();
+
+/**
+ * Returns the names of optional features compiled into this libaria2 build.
+ */
+std::vector<std::string> getSupportedFeatures();
+
+/**
+ * Returns active BitTorrent peers for |gid|. For non-BitTorrent and stopped
+ * downloads this returns an empty vector.
+ */
+std::vector<PeerData> getPeers(Session* session, A2Gid gid);
+
+/**
+ * Returns active HTTP/FTP server connections for |gid|. For stopped
+ * downloads this returns an empty vector.
+ */
+std::vector<ServerData> getServers(Session* session, A2Gid gid);
+
+/**
  * @enum
  *
  * Download event constants

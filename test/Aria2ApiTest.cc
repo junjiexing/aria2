@@ -1,5 +1,7 @@
 #include "aria2api.h"
 
+#include <algorithm>
+
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "TestUtil.h"
@@ -25,6 +27,7 @@ class Aria2ApiTest : public CppUnit::TestFixture {
   CPPUNIT_TEST(testChangeOption);
   CPPUNIT_TEST(testChangeGlobalOption);
   CPPUNIT_TEST(testDownloadResultDH);
+  CPPUNIT_TEST(testCapabilityMetadata);
   CPPUNIT_TEST_SUITE_END();
 
   Session* session_;
@@ -47,9 +50,27 @@ public:
   void testChangeOption();
   void testChangeGlobalOption();
   void testDownloadResultDH();
+  void testCapabilityMetadata();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(Aria2ApiTest);
+
+void Aria2ApiTest::testCapabilityMetadata()
+{
+  const auto options = getOptionMetadata();
+  CPPUNIT_ASSERT(!options.empty());
+  const auto split = std::find_if(
+      options.begin(), options.end(),
+      [](const OptionData& option) { return option.name == "split"; });
+  CPPUNIT_ASSERT(split != options.end());
+  CPPUNIT_ASSERT(split->initialOption);
+
+  const auto features = getSupportedFeatures();
+  CPPUNIT_ASSERT(!features.empty());
+
+  CPPUNIT_ASSERT(getPeers(session_, 0).empty());
+  CPPUNIT_ASSERT(getServers(session_, 0).empty());
+}
 
 void Aria2ApiTest::testAddUri()
 {
