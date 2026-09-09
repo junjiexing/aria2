@@ -1615,6 +1615,14 @@ void changeOption(const std::shared_ptr<RequestGroup>& group,
 #ifdef ENABLE_BITTORRENT
   if (option.defined(PREF_DIR) || option.defined(PREF_INDEX_OUT)) {
     if (dctx->hasAttribute(CTX_ATTR_BT)) {
+      if (option.defined(PREF_DIR)) {
+        for (auto& fileEntry : dctx->getFileEntries()) {
+          if (!fileEntry->getSuffixPath().empty()) {
+            fileEntry->setPath(util::applyDir(grOption->get(PREF_DIR),
+                                              fileEntry->getSuffixPath()));
+          }
+        }
+      }
       std::istringstream indexOutIn(grOption->get(PREF_INDEX_OUT));
       std::vector<std::pair<size_t, std::string>> indexPaths =
           util::createIndexPaths(indexOutIn);
