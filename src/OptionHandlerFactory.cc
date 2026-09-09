@@ -1599,6 +1599,24 @@ std::vector<OptionHandler*> OptionHandlerFactory::createOptionHandlers()
     handlers.push_back(op);
   }
   {
+    OptionHandler* op(new IntegerRangeOptionHandler(
+        PREF_BT_PRIORITIZE_FILE, TEXT_BT_PRIORITIZE_FILE, NO_DEFAULT_VALUE, 1,
+        1_m));
+    op->addTag(TAG_BITTORRENT);
+    op->setInitialOption(true);
+    op->setChangeOptionForReserved(true);
+    handlers.push_back(op);
+  }
+  {
+    OptionHandler* op(new IntegerRangeOptionHandler(
+        PREF_BT_DEPRIORITIZE_FILE, TEXT_BT_DEPRIORITIZE_FILE,
+        NO_DEFAULT_VALUE, 1, 1_m));
+    op->addTag(TAG_BITTORRENT);
+    op->setInitialOption(true);
+    op->setChangeOptionForReserved(true);
+    handlers.push_back(op);
+  }
+  {
     OptionHandler* op(new BooleanOptionHandler(
         PREF_BT_REMOVE_UNSELECTED_FILE, TEXT_BT_REMOVE_UNSELECTED_FILE,
         A2_V_FALSE, OptionHandler::OPT_ARG));

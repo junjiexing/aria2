@@ -633,6 +633,14 @@
     "                              tail=SIZE means the range of last SIZE bytes of\n" \
     "                              each file. SIZE can include K or M(1K = 1024, 1M =\n" \
     "                              1024K). If SIZE is omitted, SIZE=1M is used.")
+#define TEXT_BT_PRIORITIZE_FILE                                         \
+  _(" --bt-prioritize-file=INDEX... Prioritize all pieces belonging to the\n" \
+    "                              selected BitTorrent file indexes. Multiple\n" \
+    "                              indexes can be specified with ',' and '-'.")
+#define TEXT_BT_DEPRIORITIZE_FILE                                       \
+  _(" --bt-deprioritize-file=INDEX... Download pieces belonging only to these\n" \
+    "                              BitTorrent file indexes after normal-priority\n" \
+    "                              files. Multiple indexes can use ',' and '-'.")
 #define TEXT_INTERFACE                                                  \
   _(" --interface=INTERFACE        Bind sockets to given interface. You can specify\n" \
     "                              interface name, IP address and hostname.")

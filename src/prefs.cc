@@ -538,6 +538,8 @@ PrefPtr PREF_BT_TRACKER_INTERVAL = makePref("bt-tracker-interval");
 PrefPtr PREF_BT_STOP_TIMEOUT = makePref("bt-stop-timeout");
 // values: head[=SIZE]|tail[=SIZE], ...
 PrefPtr PREF_BT_PRIORITIZE_PIECE = makePref("bt-prioritize-piece");
+PrefPtr PREF_BT_PRIORITIZE_FILE = makePref("bt-prioritize-file");
+PrefPtr PREF_BT_DEPRIORITIZE_FILE = makePref("bt-deprioritize-file");
 // values: true | false
 PrefPtr PREF_BT_SAVE_METADATA = makePref("bt-save-metadata");
 // values: true | false

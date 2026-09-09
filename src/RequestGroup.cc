@@ -119,6 +119,90 @@
 
 namespace aria2 {
 
+#ifdef ENABLE_BITTORRENT
+namespace {
+std::vector<bool> parseFileIndexes(
+    const std::string& value,
+    const std::vector<std::shared_ptr<FileEntry>>& files)
+{
+  std::vector<bool> selected(files.size(), false);
+  auto segments = util::parseIntSegments(value);
+  segments.normalize();
+  while (segments.hasNext()) {
+    const auto index = segments.next();
+    if (index > 0 && static_cast<size_t>(index) <= selected.size()) {
+      selected[index - 1] = true;
+    }
+  }
+  return selected;
+}
+
+std::vector<size_t> collectFilePieces(
+    const std::vector<std::shared_ptr<FileEntry>>& files,
+    const std::vector<bool>& included, size_t pieceLength)
+{
+  std::vector<size_t> pieces;
+  for (size_t index = 0; index < files.size(); ++index) {
+    const auto& file = files[index];
+    if (!included[index] || !file->isRequested() || file->getLength() == 0) {
+      continue;
+    }
+
+    auto piece = static_cast<size_t>(file->getOffset() / pieceLength);
+    const auto lastPiece = static_cast<size_t>(
+        (file->getLastOffset() - 1) / pieceLength);
+    while (piece <= lastPiece) {
+      pieces.push_back(piece++);
+    }
+  }
+  std::sort(std::begin(pieces), std::end(pieces));
+  pieces.erase(std::unique(std::begin(pieces), std::end(pieces)),
+               std::end(pieces));
+  std::shuffle(std::begin(pieces), std::end(pieces),
+               *SimpleRandomizer::getInstance());
+  return pieces;
+}
+
+void applyFilePriorities(DefaultPieceStorage* storage,
+                         const std::shared_ptr<Option>& option,
+                         const std::vector<std::shared_ptr<FileEntry>>& files,
+                         size_t pieceLength)
+{
+  const auto high = parseFileIndexes(option->get(PREF_BT_PRIORITIZE_FILE),
+                                     files);
+  const auto low = parseFileIndexes(option->get(PREF_BT_DEPRIORITIZE_FILE),
+                                    files);
+  auto selector = storage->popPieceSelector();
+
+  if (std::any_of(std::begin(low), std::end(low),
+                  [](bool value) { return value; })) {
+    std::vector<bool> normal(files.size(), false);
+    for (size_t index = 0; index < files.size(); ++index) {
+      normal[index] = !high[index] && !low[index];
+    }
+    auto normalPieces = collectFilePieces(files, normal, pieceLength);
+    if (!normalPieces.empty()) {
+      auto normalSelector =
+          make_unique<PriorityPieceSelector>(std::move(selector));
+      normalSelector->setPriorityPiece(std::begin(normalPieces),
+                                       std::end(normalPieces));
+      selector = std::move(normalSelector);
+    }
+  }
+
+  auto highPieces = collectFilePieces(files, high, pieceLength);
+  if (!highPieces.empty()) {
+    auto highSelector =
+        make_unique<PriorityPieceSelector>(std::move(selector));
+    highSelector->setPriorityPiece(std::begin(highPieces),
+                                   std::end(highPieces));
+    selector = std::move(highSelector);
+  }
+  storage->setPieceSelector(std::move(selector));
+}
+} // namespace
+#endif // ENABLE_BITTORRENT
+
 RequestGroup::RequestGroup(const std::shared_ptr<GroupId>& gid,
                            const std::shared_ptr<Option>& option)
     : belongsToGID_(0),
@@ -574,6 +658,12 @@ void RequestGroup::initPieceStorage()
         // integrated downloads.
         A2_LOG_DEBUG("Using LongestSequencePieceSelector");
         ps->setPieceSelector(make_unique<LongestSequencePieceSelector>());
+      }
+      if (option_->defined(PREF_BT_PRIORITIZE_FILE) ||
+          option_->defined(PREF_BT_DEPRIORITIZE_FILE)) {
+        applyFilePriorities(ps.get(), option_,
+                            downloadContext_->getFileEntries(),
+                            downloadContext_->getPieceLength());
       }
       if (option_->defined(PREF_BT_PRIORITIZE_PIECE)) {
         std::vector<size_t> result;

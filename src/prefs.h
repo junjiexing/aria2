@@ -489,6 +489,10 @@ extern PrefPtr PREF_BT_TRACKER_INTERVAL;
 extern PrefPtr PREF_BT_STOP_TIMEOUT;
 // values: head[=SIZE]|tail[=SIZE], ...
 extern PrefPtr PREF_BT_PRIORITIZE_PIECE;
+// values: 1*digit *( (,|-) 1*digit)
+extern PrefPtr PREF_BT_PRIORITIZE_FILE;
+// values: 1*digit *( (,|-) 1*digit)
+extern PrefPtr PREF_BT_DEPRIORITIZE_FILE;
 // values: true | false
 extern PrefPtr PREF_BT_SAVE_METADATA;
 // values: true | false

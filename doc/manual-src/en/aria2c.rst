@@ -768,6 +768,19 @@ BitTorrent Specific Options
   last SIZE bytes of each file. SIZE can include ``K`` or ``M`` (1K = 1024,
   1M = 1024K). If SIZE is omitted, SIZE=1M is used.
 
+.. option:: --bt-prioritize-file=<INDEX>...
+
+  Prioritize all pieces belonging to the selected BitTorrent file indexes.
+  Multiple indexes can be specified using ``,`` and ``-``. This option may
+  only be changed while the download is waiting or paused.
+
+.. option:: --bt-deprioritize-file=<INDEX>...
+
+  Download pieces belonging only to these BitTorrent file indexes after
+  normal-priority files. Multiple indexes can be specified using ``,`` and
+  ``-``. This option may only be changed while the download is waiting or
+  paused.
+
 .. option:: --bt-remove-unselected-file [true|false]
 
    Removes the unselected files when download is completed in
