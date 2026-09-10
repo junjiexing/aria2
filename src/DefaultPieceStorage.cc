@@ -386,6 +386,26 @@ bool DefaultPieceStorage::hasMissingUnusedPiece()
   return bitfieldMan_->getFirstMissingUnusedIndex(index);
 }
 
+bool DefaultPieceStorage::getRuntimePriorityPiece(size_t& index)
+{
+  if (!runtimePriorityEnabled_) {
+    return false;
+  }
+
+  const auto numPieces = bitfieldMan_->countBlock();
+  for (auto piece = runtimePriorityFirst_;
+       piece <= runtimePriorityLast_ && piece < numPieces; ++piece) {
+    if (!bitfieldMan_->isBitSet(piece) &&
+        !bitfieldMan_->isUseBitSet(piece) &&
+        (!bitfieldMan_->isFilterEnabled() ||
+         bitfieldMan_->isFilterBitSet(piece))) {
+      index = piece;
+      return true;
+    }
+  }
+  return false;
+}
+
 std::shared_ptr<Piece>
 DefaultPieceStorage::getMissingPiece(size_t minSplitSize,
                                      const unsigned char* ignoreBitfield,

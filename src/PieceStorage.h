@@ -137,6 +137,11 @@ public:
   getMissingPiece(size_t minSplitSize, const unsigned char* ignoreBitfield,
                   size_t length, cuid_t cuid) = 0;
 
+  // Stores the first missing and unused piece from the current runtime
+  // priority range in index. Returns false when no runtime priority is set or
+  // every piece in the range is already complete or in flight.
+  virtual bool getRuntimePriorityPiece(size_t& index) { return false; }
+
   /**
    * Returns a missing piece whose index is index.
    * If a piece whose index is index is already acquired or currently used,

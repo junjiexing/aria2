@@ -181,6 +181,9 @@ public:
   getMissingPiece(size_t minSplitSize, const unsigned char* ignoreBitfield,
                   size_t length, cuid_t cuid) CXX11_OVERRIDE;
 
+  virtual bool
+  getRuntimePriorityPiece(size_t& index) CXX11_OVERRIDE;
+
   virtual std::shared_ptr<Piece> getMissingPiece(size_t index,
                                                  cuid_t cuid) CXX11_OVERRIDE;
 

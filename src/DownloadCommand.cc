@@ -355,6 +355,17 @@ bool DownloadCommand::prepareForNextSegment()
                                   tempSegment->getLength())) {
         return prepareForRetry(0);
       }
+
+      size_t priorityIndex;
+      if (getPieceStorage()->getRuntimePriorityPiece(priorityIndex) &&
+          priorityIndex != tempSegment->getIndex() + 1) {
+        A2_LOG_DEBUG(fmt("CUID#%" PRId64
+                         " - Restarting stream at runtime priority piece#%lu",
+                         getCuid(),
+                         static_cast<unsigned long>(priorityIndex)));
+        return prepareForRetry(0);
+      }
+
       std::shared_ptr<Segment> nextSegment =
           getSegmentMan()->getSegmentWithIndex(getCuid(),
                                                tempSegment->getIndex() + 1);

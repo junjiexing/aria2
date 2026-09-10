@@ -39,6 +39,7 @@ class DefaultPieceStorageTest : public CppUnit::TestFixture {
   CPPUNIT_TEST(testGetCompletedLength);
   CPPUNIT_TEST(testGetFilteredCompletedLength);
   CPPUNIT_TEST(testGetNextUsedIndex);
+  CPPUNIT_TEST(testRuntimePriorityPieceRange);
   CPPUNIT_TEST(testAdvertisePiece);
   CPPUNIT_TEST_SUITE_END();
 
@@ -78,6 +79,7 @@ public:
   void testGetCompletedLength();
   void testGetFilteredCompletedLength();
   void testGetNextUsedIndex();
+  void testRuntimePriorityPieceRange();
   void testAdvertisePiece();
 };
 
@@ -88,6 +90,28 @@ void DefaultPieceStorageTest::testGetTotalLength()
   DefaultPieceStorage pss(dctx_, option_.get());
 
   CPPUNIT_ASSERT_EQUAL((int64_t)384LL, pss.getTotalLength());
+}
+
+void DefaultPieceStorageTest::testRuntimePriorityPieceRange()
+{
+  DefaultPieceStorage pss(dctx_, option_.get());
+
+  size_t index = 0;
+  CPPUNIT_ASSERT(!pss.getRuntimePriorityPiece(index));
+
+  pss.setRuntimePriorityPieceRange(2, 2);
+  CPPUNIT_ASSERT(pss.getRuntimePriorityPiece(index));
+  CPPUNIT_ASSERT_EQUAL((size_t)2, index);
+
+  auto piece = pss.getMissingPiece(dctx_->getPieceLength(), nullptr, 0, 1);
+  CPPUNIT_ASSERT(piece);
+  CPPUNIT_ASSERT_EQUAL((size_t)2, piece->getIndex());
+  CPPUNIT_ASSERT(!pss.getRuntimePriorityPiece(index));
+
+  pss.cancelPiece(piece, 1);
+  pss.setRuntimePriorityPieceRange(1, 1);
+  CPPUNIT_ASSERT(pss.getRuntimePriorityPiece(index));
+  CPPUNIT_ASSERT_EQUAL((size_t)1, index);
 }
 
 void DefaultPieceStorageTest::testGetMissingPiece()
