@@ -51,8 +51,10 @@ private:
   bool runtime_;
 
 public:
+  PriorityPieceSelector(const std::shared_ptr<PieceSelector>& selector);
+
   PriorityPieceSelector(const std::shared_ptr<PieceSelector>& selector,
-                        bool runtime = false);
+                        bool runtime);
 
   virtual bool select(size_t& index, const unsigned char* bitfield,
                       size_t nbits) const CXX11_OVERRIDE;
