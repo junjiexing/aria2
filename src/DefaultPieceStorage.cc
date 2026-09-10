@@ -92,6 +92,9 @@ DefaultPieceStorage::DefaultPieceStorage(
       pieceStatMan_(std::make_shared<PieceStatMan>(
           downloadContext->getNumPieces(), true)),
       pieceSelector_(make_unique<RarestPieceSelector>(pieceStatMan_)),
+      runtimePriorityEnabled_(false),
+      runtimePriorityFirst_(0),
+      runtimePriorityLast_(0),
       wrDiskCache_(nullptr)
 {
   const std::string& pieceSelectorOpt =
@@ -388,6 +391,21 @@ DefaultPieceStorage::getMissingPiece(size_t minSplitSize,
                                      const unsigned char* ignoreBitfield,
                                      size_t length, cuid_t cuid)
 {
+  if (runtimePriorityEnabled_) {
+    const auto numPieces = bitfieldMan_->countBlock();
+    for (auto piece = runtimePriorityFirst_;
+         piece <= runtimePriorityLast_ && piece < numPieces; ++piece) {
+      if (ignoreBitfield != nullptr && piece < length * 8 &&
+          bitfield::test(ignoreBitfield, length * 8, piece)) {
+        continue;
+      }
+      auto selected = getMissingPiece(piece, cuid);
+      if (selected) {
+        return selected;
+      }
+    }
+  }
+
   size_t index;
   if (streamPieceSelector_->select(index, minSplitSize, ignoreBitfield,
                                    length)) {

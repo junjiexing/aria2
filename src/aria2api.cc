@@ -600,6 +600,7 @@ int prioritizePieceRange(Session* session, A2Gid gid, size_t firstPiece,
   if (!storage || !storage->getPieceSelector()) {
     return -1;
   }
+  storage->setRuntimePriorityPieceRange(firstPiece, lastPiece);
 
   std::vector<size_t> pieces;
   pieces.reserve(lastPiece - firstPiece + 1);

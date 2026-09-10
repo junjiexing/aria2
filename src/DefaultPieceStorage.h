@@ -94,6 +94,10 @@ private:
   std::unique_ptr<PieceSelector> pieceSelector_;
   std::unique_ptr<StreamPieceSelector> streamPieceSelector_;
 
+  bool runtimePriorityEnabled_;
+  size_t runtimePriorityFirst_;
+  size_t runtimePriorityLast_;
+
   WrDiskCache* wrDiskCache_;
 #ifdef ENABLE_BITTORRENT
   void getMissingPiece(std::vector<std::shared_ptr<Piece>>& pieces,
@@ -298,6 +302,13 @@ public:
   }
 
   std::unique_ptr<PieceSelector> popPieceSelector();
+
+  void setRuntimePriorityPieceRange(size_t firstPiece, size_t lastPiece)
+  {
+    runtimePriorityEnabled_ = true;
+    runtimePriorityFirst_ = firstPiece;
+    runtimePriorityLast_ = lastPiece;
+  }
 
   void setWrDiskCache(WrDiskCache* wrDiskCache) { wrDiskCache_ = wrDiskCache; }
 };
