@@ -24,6 +24,7 @@ class Aria2ApiTest : public CppUnit::TestFixture {
   CPPUNIT_TEST(testAddTorrent);
   CPPUNIT_TEST(testRemovePause);
   CPPUNIT_TEST(testChangePosition);
+  CPPUNIT_TEST(testPrioritizePieceRange);
   CPPUNIT_TEST(testChangeOption);
   CPPUNIT_TEST(testChangeGlobalOption);
   CPPUNIT_TEST(testDownloadResultDH);
@@ -48,6 +49,7 @@ public:
   void testAddTorrent();
   void testRemovePause();
   void testChangePosition();
+  void testPrioritizePieceRange();
   void testChangeOption();
   void testChangeGlobalOption();
   void testDownloadResultDH();
@@ -193,6 +195,12 @@ void Aria2ApiTest::testChangePosition()
 
   CPPUNIT_ASSERT_EQUAL(7,
                        changePosition(session_, gids[4], -2, OFFSET_MODE_END));
+}
+
+void Aria2ApiTest::testPrioritizePieceRange()
+{
+  CPPUNIT_ASSERT_EQUAL(-1,
+                       prioritizePieceRange(session_, (A2Gid)0, 0, 0));
 }
 
 void Aria2ApiTest::testChangeOption()

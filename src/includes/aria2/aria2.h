@@ -654,6 +654,17 @@ int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how);
 /**
  * @function
  *
+ * Prioritizes the inclusive piece range from |firstPiece| to |lastPiece| for
+ * an active download.  A later call replaces the previous runtime range and
+ * preserves priorities configured when the download was created.  This
+ * function returns 0 if it succeeds, or negative error code.
+ */
+int prioritizePieceRange(Session* session, A2Gid gid, size_t firstPiece,
+                         size_t lastPiece);
+
+/**
+ * @function
+ *
  * Schedules shutdown. If the |force| is true, shutdown will take
  * place without any action which takes time such as contacting
  * BitTorrent tracker. After this call, the application must keep

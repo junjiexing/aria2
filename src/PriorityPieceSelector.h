@@ -48,8 +48,11 @@ private:
 
   std::shared_ptr<PieceSelector> selector_;
 
+  bool runtime_;
+
 public:
-  PriorityPieceSelector(const std::shared_ptr<PieceSelector>& selector);
+  PriorityPieceSelector(const std::shared_ptr<PieceSelector>& selector,
+                        bool runtime = false);
 
   virtual bool select(size_t& index, const unsigned char* bitfield,
                       size_t nbits) const CXX11_OVERRIDE;
@@ -60,6 +63,8 @@ public:
     std::vector<size_t> t(first, last);
     prioritizedPieces_.swap(t);
   }
+
+  bool isRuntime() const { return runtime_; }
 };
 
 } // namespace aria2

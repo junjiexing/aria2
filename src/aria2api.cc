@@ -51,6 +51,8 @@
 #include "download_helper.h"
 #include "LogFactory.h"
 #include "PieceStorage.h"
+#include "DefaultPieceStorage.h"
+#include "PriorityPieceSelector.h"
 #include "DownloadContext.h"
 #include "FileEntry.h"
 #include "FeatureConfig.h"
@@ -576,6 +578,49 @@ int changePosition(Session* session, A2Gid gid, int pos, OffsetMode how)
     A2_LOG_INFO_EX(EX_EXCEPTION_CAUGHT, e);
     return -1;
   }
+}
+
+int prioritizePieceRange(Session* session, A2Gid gid, size_t firstPiece,
+                         size_t lastPiece)
+{
+  auto& e = session->context->reqinfo->getDownloadEngine();
+  const auto group = e->getRequestGroupMan()->findGroup(gid);
+  if (!group || group->getState() != RequestGroup::STATE_ACTIVE ||
+      firstPiece > lastPiece) {
+    return -1;
+  }
+
+  const auto numPieces = group->getDownloadContext()->getNumPieces();
+  if (numPieces <= 0 || lastPiece >= static_cast<size_t>(numPieces)) {
+    return -1;
+  }
+
+  const auto storage =
+      std::dynamic_pointer_cast<DefaultPieceStorage>(group->getPieceStorage());
+  if (!storage || !storage->getPieceSelector()) {
+    return -1;
+  }
+
+  std::vector<size_t> pieces;
+  pieces.reserve(lastPiece - firstPiece + 1);
+  for (auto piece = firstPiece; piece <= lastPiece; ++piece) {
+    pieces.push_back(piece);
+  }
+
+  auto* runtimeSelector =
+      dynamic_cast<PriorityPieceSelector*>(storage->getPieceSelector().get());
+  if (runtimeSelector && runtimeSelector->isRuntime()) {
+    runtimeSelector->setPriorityPiece(std::begin(pieces), std::end(pieces));
+  }
+  else {
+    auto selector = make_unique<PriorityPieceSelector>(
+        storage->popPieceSelector(), true);
+    selector->setPriorityPiece(std::begin(pieces), std::end(pieces));
+    storage->setPieceSelector(std::move(selector));
+  }
+
+  e->setRefreshInterval(std::chrono::milliseconds(0));
+  return 0;
 }
 
 int changeOption(Session* session, A2Gid gid, const KeyVals& options)

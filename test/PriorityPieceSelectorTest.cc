@@ -13,10 +13,12 @@ class PriorityPieceSelectorTest : public CppUnit::TestFixture {
 
   CPPUNIT_TEST_SUITE(PriorityPieceSelectorTest);
   CPPUNIT_TEST(testSelect);
+  CPPUNIT_TEST(testRuntimeMarker);
   CPPUNIT_TEST_SUITE_END();
 
 public:
   void testSelect();
+  void testRuntimeMarker();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(PriorityPieceSelectorTest);
@@ -41,6 +43,16 @@ void PriorityPieceSelectorTest::testSelect()
   CPPUNIT_ASSERT_EQUAL((size_t)200, index);
   bf.unsetBit(200);
   CPPUNIT_ASSERT(!selector.select(index, bf.getBitfield(), bf.countBlock()));
+}
+
+void PriorityPieceSelectorTest::testRuntimeMarker()
+{
+  const auto fallback = std::shared_ptr<PieceSelector>(new MockPieceSelector());
+  PriorityPieceSelector configured(fallback);
+  PriorityPieceSelector runtime(fallback, true);
+
+  CPPUNIT_ASSERT(!configured.isRuntime());
+  CPPUNIT_ASSERT(runtime.isRuntime());
 }
 
 } // namespace aria2
